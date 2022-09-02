@@ -26,6 +26,7 @@ class FractalViewerWidget : public QWidget
 
     void queueUpdate();
     void shiftBy(double dx, double dy);
+    void createActions();
 public:
     FractalViewerWidget();
 

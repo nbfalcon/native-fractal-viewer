@@ -4,9 +4,10 @@
 #include <cmath>
 #include <optional>
 #include <QPainter>
-#include <QtConcurrent/QtConcurrent>
-#include <QFuture>
+#include <QAction>
+#include <QKeySequence>
 #include <QWheelEvent>
+#include <QtConcurrent/QtConcurrent>
 
 struct ImageSlice {
     QRectF source;
@@ -51,6 +52,30 @@ FractalViewerWidget::FractalViewerWidget()
     : viewPort(DEFAULT_VP)
 {
     uiRenderPool.setMaxThreadCount(8);
+    createActions();
+}
+
+void FractalViewerWidget::createActions() {
+    QAction *panUp = new QAction(tr("Pan Up"), this);
+    connect(panUp, &QAction::triggered, this, [this](){ shiftBy(0.0, -0.1); });
+    panUp->setShortcut(Qt::Key_Up);
+
+    QAction *panDown = new QAction(tr("Pan Down"), this);
+    connect(panDown, &QAction::triggered, this, [this](){ shiftBy(0.0, 0.1); });
+    panDown->setShortcut(Qt::Key_Down);
+
+    QAction *panLeft = new QAction(tr("Pan Left"), this);
+    connect(panLeft, &QAction::triggered, this, [this](){ shiftBy(-0.1, 0.0); });
+    panLeft->setShortcut(Qt::Key_Left);
+
+    QAction *panRight = new QAction(tr("Pan Right"), this);
+    connect(panRight, &QAction::triggered, this, [this](){ shiftBy(+0.1, 0.0); });
+    panRight->setShortcut(Qt::Key_Right);
+
+    addAction(panUp);
+    addAction(panDown);
+    addAction(panLeft);
+    addAction(panRight);
 }
 
 void FractalViewerWidget::paintEvent(QPaintEvent *)
