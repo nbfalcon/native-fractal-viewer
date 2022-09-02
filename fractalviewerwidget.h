@@ -27,6 +27,7 @@ class FractalViewerWidget : public QWidget
     void queueUpdate();
     void shiftBy(double dx, double dy);
     void createActions();
+    void update2();
 public:
     FractalViewerWidget();
 
@@ -34,6 +35,10 @@ protected:
     void paintEvent(QPaintEvent *) override;
     void resizeEvent(QResizeEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
+
+private slots:
+    void zoomIn();
+    void zoomOut();
 };
 
 #endif // FRACTALVIEWERWIDGET_H

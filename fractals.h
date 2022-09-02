@@ -3,6 +3,7 @@
 
 #include "xfuture.h"
 #include <memory>
+#include <cmath>
 #include <QImage>
 #include <QThreadPool>
 
@@ -15,6 +16,20 @@ struct FractalViewport {
         x2 += dx;
         y1 += dy;
         y2 += dy;
+    }
+
+    void zoomIn(double byFactor) {
+        byFactor = std::sqrt(byFactor);
+        double dw = (width() - width() / byFactor) / 2, dh = (height() - height() / byFactor) / 2;
+        x1 += dw; x2 -= dw;
+        y1 += dh; y2 -= dh;
+    }
+
+    void zoomOut(double byFactor) {
+        byFactor = std::sqrt(byFactor);
+        double dw = (width() - width() * byFactor) / 2, dh = (height() - height() * byFactor) / 2;
+        x1 += dw; x2 -= dw;
+        y1 += dh; y2 -= dh;
     }
 
     double width() const {
@@ -34,7 +49,7 @@ struct FractalViewport {
         };
     }
 
-    bool operator ==(FractalViewport &other) {
+    bool operator ==(const FractalViewport &other) const {
         return x1 == other.x1 && y1 == other.y1 && x2 == other.x2 && y2 == other.y2;
     }
 };

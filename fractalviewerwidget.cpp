@@ -10,8 +10,8 @@
 #include <QtConcurrent/QtConcurrent>
 
 struct ImageSlice {
-    QRectF source;
-    QRectF target;
+    QRectF inSrcImage;
+    QRectF inDrawSurface;
 };
 
 // Adapted from my java fractal viewer; I don't want to derive this fancy algorithm again
@@ -35,8 +35,8 @@ static std::optional<ImageSlice> getViewPortSlice(const FractalViewport &actualV
     if (width <= 0 || height <= 0) return std::nullopt;
 
     return ImageSlice{
-        .source = QRectF(x, y, width, height),
-        .target = QRectF(-std::min(0, rawX), -std::min(0, rawY),
+        .inSrcImage = QRectF(x, y, width, height),
+        .inDrawSurface = QRectF(-std::min(0, rawX), -std::min(0, rawY),
                         imWidth - std::max(0, rawWidth - maxWidth),
                         imHeight - std::max(0, rawHeight - maxHeight))
     };
@@ -56,26 +56,36 @@ FractalViewerWidget::FractalViewerWidget()
 }
 
 void FractalViewerWidget::createActions() {
-    QAction *panUp = new QAction(tr("Pan Up"), this);
+    QAction *panUp = new QAction(tr("Pan &Up"), this);
     connect(panUp, &QAction::triggered, this, [this](){ shiftBy(0.0, -0.1); });
     panUp->setShortcut(Qt::Key_Up);
 
-    QAction *panDown = new QAction(tr("Pan Down"), this);
+    QAction *panDown = new QAction(tr("Pan &Down"), this);
     connect(panDown, &QAction::triggered, this, [this](){ shiftBy(0.0, 0.1); });
     panDown->setShortcut(Qt::Key_Down);
 
-    QAction *panLeft = new QAction(tr("Pan Left"), this);
+    QAction *panLeft = new QAction(tr("Pan &Left"), this);
     connect(panLeft, &QAction::triggered, this, [this](){ shiftBy(-0.1, 0.0); });
     panLeft->setShortcut(Qt::Key_Left);
 
-    QAction *panRight = new QAction(tr("Pan Right"), this);
+    QAction *panRight = new QAction(tr("Pan &Right"), this);
     connect(panRight, &QAction::triggered, this, [this](){ shiftBy(+0.1, 0.0); });
     panRight->setShortcut(Qt::Key_Right);
+
+    QAction *zoomIn = new QAction(tr("Zoom &In"));
+    connect(zoomIn, &QAction::triggered, this, &FractalViewerWidget::zoomIn);
+    zoomIn->setShortcuts(QList<QKeySequence>{QKeySequence::StandardKey::ZoomIn, Qt::Key_Plus});
+
+    QAction *zoomOut = new QAction(tr("Zoom &Out"));
+    connect(zoomOut, &QAction::triggered, this, &FractalViewerWidget::zoomOut);
+    zoomOut->setShortcuts(QList<QKeySequence>{QKeySequence::StandardKey::ZoomOut, Qt::Key_Minus});
 
     addAction(panUp);
     addAction(panDown);
     addAction(panLeft);
     addAction(panRight);
+    addAction(zoomIn);
+    addAction(zoomOut);
 }
 
 void FractalViewerWidget::paintEvent(QPaintEvent *)
@@ -89,7 +99,7 @@ void FractalViewerWidget::paintEvent(QPaintEvent *)
         }
         else {
             const ImageSlice &theSlice = *theSliceM;
-            painter.drawImage(theSlice.source, *currentFractal.rendering, theSlice.target);
+            painter.drawImage(theSlice.inSrcImage, *currentFractal.rendering, theSlice.inDrawSurface);
         }
     }
     else {
@@ -107,8 +117,7 @@ void FractalViewerWidget::wheelEvent(QWheelEvent *event) {
 
 void FractalViewerWidget::shiftBy(double dx, double dy) {
     viewPort.shiftBy(dx, dy);
-    update();
-    queueUpdate();
+    update2();
 }
 
 void FractalViewerWidget::queueUpdate() {
@@ -128,4 +137,19 @@ void FractalViewerWidget::queueUpdate() {
         connToWidget->deleteLater();
     });
     lastCancelHandle = imagePromise;
+}
+
+void FractalViewerWidget::update2() {
+    queueUpdate();
+    update();
+}
+
+void FractalViewerWidget::zoomIn() {
+    viewPort.zoomIn(2);
+    update2();
+}
+
+void FractalViewerWidget::zoomOut() {
+    viewPort.zoomOut(2);
+    update2();
 }
