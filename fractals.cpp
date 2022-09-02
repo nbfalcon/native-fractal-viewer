@@ -1,15 +1,22 @@
 #include "fractals.h"
+#include "xfuture.h"
 #include <complex>
 
-void render_mandelbrot(int width, int height, QThreadPool &pool, int nThreads, std::function<void(QImage *result)> onResult) {
+std::shared_ptr<XPromise<QImage *>> render_mandelbrot(int width, int height, QThreadPool &pool, int nThreads) {
     std::complex<double> start{-2.0, -2.0}, end{2.0, 2.0};
 
     std::atomic_int *countDown = new std::atomic_int(nThreads);
-    std::function<void(QImage *)> *onResultHeap = new std::function<void(QImage *)>(std::move(onResult));
+    std::shared_ptr<XPromise<QImage *>> resultPromise = std::make_shared<XPromise<QImage *> >();
 
     QImage *result = new QImage(width, height, QImage::Format_RGB32);
     for (int threadNo = 0; threadNo < nThreads; threadNo++) {
-        pool.start([onResultHeap, countDown, threadNo, nThreads, result, width, height, start, end](){
+        pool.start([resultPromise, countDown, threadNo, nThreads, result, width, height, start, end](){
+            // FIXME: do we care about synchronization? Also, can we just use weak?
+            if (!resultPromise->started()) {
+                if (resultPromise->cancelled()) return;
+                resultPromise->start();
+            }
+
             for (int y = threadNo; y < height; y += nThreads) {
                 uint *writeLine = reinterpret_cast<uint*>(result->scanLine(y));
                 for (int x = 0; x < width; x++) {
@@ -32,9 +39,10 @@ void render_mandelbrot(int width, int height, QThreadPool &pool, int nThreads, s
             // Last thread -> we're done
             if (countDown->fetch_sub(1, std::memory_order_acq_rel) == 1) {
                 delete countDown;
-                (*onResultHeap)(result);
-                delete onResultHeap;
+                resultPromise->complete(result);
             }
         });
     }
+
+    return resultPromise;
 }

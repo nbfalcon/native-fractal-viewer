@@ -1,6 +1,7 @@
 #ifndef FRACTALVIEWERWIDGET_H
 #define FRACTALVIEWERWIDGET_H
 
+#include "xfuture.h"
 #include <memory>
 #include <QWidget>
 #include <QRunnable>
@@ -11,7 +12,7 @@ class FractalViewerWidget : public QWidget
     Q_OBJECT
 
     std::unique_ptr<QImage> currentFractal;
-    std::shared_ptr<std::atomic_bool> lastCancelHandle;
+    std::shared_ptr<XPromise<QImage *>> lastCancelHandle;
 
     QThreadPool uiRenderPool;
 

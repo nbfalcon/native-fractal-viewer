@@ -1,6 +1,6 @@
 QT += gui widgets quick
 
-CONFIG += c++14
+CONFIG += c++17
 # CONFIG += sanitizer sanitize_address
 
 # You can make your code fail to compile if it uses deprecated APIs.
@@ -29,4 +29,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     fractals.h \
     fractalviewerwidget.h \
+    xfuture.h \
     xqconnection.h

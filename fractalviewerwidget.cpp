@@ -27,19 +27,18 @@ void FractalViewerWidget::resizeEvent(QResizeEvent *) {
 
 void FractalViewerWidget::queueUpdate() {
     if (lastCancelHandle) {
-        lastCancelHandle->store(true);
+        lastCancelHandle->cancel();
     }
-    std::shared_ptr<std::atomic_bool> newCancelHandle = std::make_shared<std::atomic_bool>(false);
-    lastCancelHandle = newCancelHandle;
 
     XQConnection *connToWidget = new XQConnection(this);
-    int w = width(), h = height();
-    render_mandelbrot(w, h, uiRenderPool, 8, [connToWidget](QImage *result){
+    std::shared_ptr<XPromise<QImage *>> imagePromise = render_mandelbrot(width(), height(), uiRenderPool, 8);
+    imagePromise->onComplete([connToWidget](QImage *result){
         connToWidget->invoke([result](QObject *actuallyTheViewer){
             static_cast<FractalViewerWidget*>(actuallyTheViewer)->updateImage(result);
         });
         connToWidget->deleteLater();
     });
+    lastCancelHandle = imagePromise;
 }
 
 void FractalViewerWidget::updateImage(QImage *newIm) {
