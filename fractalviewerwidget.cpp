@@ -6,9 +6,8 @@
 #include <QFuture>
 
 FractalViewerWidget::FractalViewerWidget()
-    : uiRenderPool{}
 {
-    uiRenderPool.setMaxThreadCount(1);
+    uiRenderPool.setMaxThreadCount(8);
 }
 
 void FractalViewerWidget::paintEvent(QPaintEvent *)
@@ -35,14 +34,10 @@ void FractalViewerWidget::queueUpdate() {
 
     XQConnection *connToWidget = new XQConnection(this);
     int w = width(), h = height();
-    uiRenderPool.start([newCancelHandle = std::move(newCancelHandle), connToWidget, w, h](){
-        if (!newCancelHandle->load()) {
-            QImage *result = render_mandelbrot(w, h);
-            connToWidget->invoke([result](QObject *actuallyTheViewer){
-                static_cast<FractalViewerWidget*>(actuallyTheViewer)->updateImage(result);
-            });
-        }
-        // You die anyway
+    render_mandelbrot(w, h, uiRenderPool, 8, [connToWidget](QImage *result){
+        connToWidget->invoke([result](QObject *actuallyTheViewer){
+            static_cast<FractalViewerWidget*>(actuallyTheViewer)->updateImage(result);
+        });
         connToWidget->deleteLater();
     });
 }
