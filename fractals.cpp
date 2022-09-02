@@ -2,8 +2,8 @@
 #include "xfuture.h"
 #include <complex>
 
-std::shared_ptr<XPromise<QImage *>> render_mandelbrot(int width, int height, QThreadPool &pool, int nThreads) {
-    std::complex<double> start{-2.0, -2.0}, end{2.0, 2.0};
+std::shared_ptr<XPromise<QImage *>> render_mandelbrot(FractalViewport viewPort, int width, int height, QThreadPool &pool, int nThreads) {
+    std::complex<double> start{viewPort.x1, viewPort.y1}, end{viewPort.x2, viewPort.y2};
 
     std::atomic_int *countDown = new std::atomic_int(nThreads);
     std::shared_ptr<XPromise<QImage *>> resultPromise = std::make_shared<XPromise<QImage *> >();
