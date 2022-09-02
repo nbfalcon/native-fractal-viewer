@@ -1,6 +1,6 @@
 QT += gui widgets quick
 
-CONFIG += c++11
+CONFIG += c++14
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -9,7 +9,8 @@ CONFIG += c++11
 SOURCES += \
         fractals.cpp \
         fractalviewerwidget.cpp \
-        main.cpp
+        main.cpp \
+        xqconnection.cpp
 
 RESOURCES += qml.qrc
 
@@ -26,4 +27,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     fractals.h \
-    fractalviewerwidget.h
+    fractalviewerwidget.h \
+    xqconnection.h

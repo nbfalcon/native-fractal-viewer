@@ -1,5 +1,6 @@
 #include "fractalviewerwidget.h"
 #include "fractals.h"
+#include "xqconnection.h"
 #include <QPainter>
 #include <QtConcurrent/QtConcurrent>
 #include <QFuture>
@@ -29,25 +30,24 @@ void FractalViewerWidget::queueUpdate() {
     if (lastCancelHandle) {
         lastCancelHandle->store(true);
     }
-    this->lastCancelHandle = std::make_shared<std::atomic_bool>(false);
+    std::shared_ptr<std::atomic_bool> newCancelHandle = std::make_shared<std::atomic_bool>(false);
+    lastCancelHandle = newCancelHandle;
 
-    FractalRenderJob *render = new FractalRenderJob(width(), height(), lastCancelHandle);
-    connect(render, &FractalRenderJob::haveResult, this, &FractalViewerWidget::updateImage, Qt::QueuedConnection);
-    uiRenderPool.start(render);
+    XQConnection *connToWidget = new XQConnection(this);
+    int w = width(), h = height();
+    uiRenderPool.start([newCancelHandle = std::move(newCancelHandle), connToWidget, w, h](){
+        if (!newCancelHandle->load()) {
+            QImage *result = render_mandelbrot(w, h);
+            connToWidget->invoke([result](QObject *actuallyTheViewer){
+                static_cast<FractalViewerWidget*>(actuallyTheViewer)->updateImage(result);
+            });
+        }
+        // You die anyway
+        connToWidget->deleteLater();
+    });
 }
 
 void FractalViewerWidget::updateImage(QImage *newIm) {
     this->currentFractal = std::unique_ptr<QImage>(newIm);
     update();
-}
-
-FractalRenderJob::FractalRenderJob(int width, int height, std::shared_ptr<std::atomic_bool> cancelHandle)
-    : width(width), height(height), cancelHandle(std::move(cancelHandle))
-{}
-
-void FractalRenderJob::run() {
-    if (!cancelHandle->load()) {
-        QImage *r = render_mandelbrot(width, height);
-        emit haveResult(r);
-    }
 }
