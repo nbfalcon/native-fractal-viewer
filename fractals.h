@@ -11,7 +11,9 @@ struct FractalViewport {
     double x1, y1;
     double x2, y2;
 
-    void shiftBy(double dx, double dy) {
+    void shiftByPercent(double dxP, double dyP) {
+        double dx = width() * dxP;
+        double dy = height() * dyP;
         x1 += dx;
         x2 += dx;
         y1 += dy;

@@ -116,7 +116,7 @@ void FractalViewerWidget::wheelEvent(QWheelEvent *event) {
 }
 
 void FractalViewerWidget::shiftBy(double dx, double dy) {
-    viewPort.shiftBy(dx, dy);
+    viewPort.shiftByPercent(dx, dy);
     update2();
 }
 
