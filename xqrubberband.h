@@ -18,6 +18,7 @@ public:
     void begin(float startX, float startY);
     void begin(QMouseEvent *event, QWidget *parent);
     void move(float endX, float endY);
+    // Also takes into account shift-down
     void move(QMouseEvent *event, QWidget *parent);
     void finish();
     bool empty();
