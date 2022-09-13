@@ -101,6 +101,8 @@ void FractalViewerWidget::paintEvent(QPaintEvent *)
             const ImageSlice &theSlice = *theSliceM;
             painter.drawImage(theSlice.inSrcImage, *currentFractal.rendering, theSlice.inDrawSurface);
         }
+
+        selection.paint(painter, this);
     }
     else {
         painter.drawText(rect(), Qt::AlignCenter, tr("Rendering fractal, please wait..."));
@@ -144,6 +146,27 @@ void FractalViewerWidget::update2() {
     update();
 }
 
+// Rubber-band
+void FractalViewerWidget::mousePressEvent(QMouseEvent *event) {
+    selection.begin(event, this);
+    // FIXME: update real rectangle
+    update();
+}
+
+void FractalViewerWidget::mouseMoveEvent(QMouseEvent *event) {
+    selection.move(event, this);
+    update();
+}
+
+void FractalViewerWidget::mouseReleaseEvent(QMouseEvent *) {
+    selection.finish();
+    if (!selection.empty()) {
+        viewPort = viewPort.slice(selection.getSelection());
+        update2();
+    }
+}
+
+// "Slots"
 void FractalViewerWidget::zoomIn() {
     viewPort.zoomIn(2);
     update2();

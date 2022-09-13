@@ -11,7 +11,8 @@ SOURCES += \
         fractals.cpp \
         fractalviewerwidget.cpp \
         main.cpp \
-        xqconnection.cpp
+        xqconnection.cpp \
+        xqrubberband.cpp
 
 RESOURCES += qml.qrc
 
@@ -30,4 +31,5 @@ HEADERS += \
     fractals.h \
     fractalviewerwidget.h \
     xfuture.h \
-    xqconnection.h
+    xqconnection.h \
+    xqrubberband.h

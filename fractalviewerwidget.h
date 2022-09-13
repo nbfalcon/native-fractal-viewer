@@ -3,6 +3,7 @@
 
 #include "fractals.h"
 #include "xfuture.h"
+#include "xqrubberband.h"
 #include <memory>
 #include <QWidget>
 #include <QRunnable>
@@ -24,6 +25,9 @@ class FractalViewerWidget : public QWidget
 
     QThreadPool uiRenderPool;
 
+    // Bonus widgets
+    XQRubberBand selection;
+
     void queueUpdate();
     void shiftBy(double dx, double dy);
     void createActions();
@@ -36,7 +40,12 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
 
-private slots:
+    // Rubber-band
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+
+private:
     void zoomIn();
     void zoomOut();
 };

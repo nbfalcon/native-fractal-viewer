@@ -51,6 +51,15 @@ struct FractalViewport {
         };
     }
 
+    FractalViewport slice(const QRectF &theSlice) const {
+        return FractalViewport {
+            .x1 = x1 + width() * theSlice.x(),
+            .y1 = y1 + height() * theSlice.y(),
+            .x2 = x1 + width() * (theSlice.x() + theSlice.width()),
+            .y2 = y1  + height() * (theSlice.y() + theSlice.height())
+        };
+    }
+
     bool operator ==(const FractalViewport &other) const {
         return x1 == other.x1 && y1 == other.y1 && x2 == other.x2 && y2 == other.y2;
     }
