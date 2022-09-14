@@ -64,6 +64,19 @@ struct FractalViewport {
         };
     }
 
+    FractalViewport clip(double x1, double y1, double x2, double y2) const {
+        return FractalViewport{
+            .x1 = std::max(x1, this->x1),
+            .y1 = std::max(y1, this->y1),
+            .x2 = std::min(x2, this->x2),
+            .y2 = std::min(y2, this->y2)
+        };
+    }
+
+    QRectF asQRectF(int scaleWidth, int scaleHeight) {
+        return QRectF(x1 * scaleWidth, y1 * scaleHeight, width() * scaleWidth, height() * scaleHeight);
+    }
+
     bool operator ==(const FractalViewport &other) const {
         return x1 == other.x1 && y1 == other.y1 && x2 == other.x2 && y2 == other.y2;
     }

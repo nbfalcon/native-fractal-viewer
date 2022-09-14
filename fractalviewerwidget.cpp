@@ -10,42 +10,20 @@
 #include <QtConcurrent/QtConcurrent>
 
 struct ImageSlice {
-    QRectF inSrcImage;
-    QRectF inDrawSurface;
+    QRectF srcSlice;
+    QRectF targetSlice;
 };
 
-// Adapted from my java fractal viewer; I don't want to derive this fancy algorithm again
-static std::optional<ImageSlice> getViewPortSlice(const FractalViewport &actualViewport, const FractalViewport &currentViewport, int imWidth, int imHeight) {
-    FractalViewport whichSlice = actualViewport.relativeTo(currentViewport);
-
-    // Without round, the image ends up jumping by a pixel once the fractal re-renders at the new
-    // viewport. This is ever so *slightly* jarring.
-    int rawX = (int) std::round(whichSlice.x1 * imWidth);
-    int rawY = (int) std::round(whichSlice.y1 * imHeight);
-    int x = std::max(0, rawX), y = std::max(0, rawY);
-
-    int rawWidth = (int) std::round(whichSlice.width() * imWidth);
-    int maxWidth = imWidth - x;
-    int width = std::min(maxWidth, rawWidth);
-    int rawHeight = (int) std::round(whichSlice.height() * imHeight);
-    int maxHeight = imHeight - y;
-    int height = std::min(maxHeight, rawHeight);
-
-    // width & height > 0 implies x & y are in bounds, due to the min above
-    if (width <= 0 || height <= 0) return std::nullopt;
+static std::optional<ImageSlice> getViewPortSlice(const FractalViewport &drawViewPort, const FractalViewport &imageViewport, int imWidth, int imHeight) {
+    // The current image, relative to the draw surface; this is where we'll draw it
+    FractalViewport imageInDraw = imageViewport.relativeTo(drawViewPort).clip(0.0, 0.0, 1.0, 1.0);
+    // The draw surface, within the image; this is the actual visible part of the image that we will select (and draw)
+    FractalViewport drawInImage = drawViewPort.relativeTo(imageViewport).clip(0.0, 0.0, 1.0, 1.0);
 
     return ImageSlice{
-        .inSrcImage = QRectF(x, y, width, height),
-        .inDrawSurface = QRectF(-std::min(0, rawX), -std::min(0, rawY),
-                        imWidth - std::max(0, rawWidth - maxWidth),
-                        imHeight - std::max(0, rawHeight - maxHeight))
+        .srcSlice = drawInImage.asQRectF(imWidth, imHeight),
+        .targetSlice = imageInDraw.asQRectF(imWidth, imHeight)
     };
-//    return new SliceImageResult(
-//            sliceMe.getSubimage(x, y, width, height),
-//            -Math.min(0, rawX), -Math.min(0, rawY),
-//            // Negative if we had to clip on rhs
-//            Math.max(0, rawWidth - maxWidth),
-//            Math.max(0, rawHeight - maxHeight));
 }
 
 FractalViewerWidget::FractalViewerWidget()
@@ -99,7 +77,7 @@ void FractalViewerWidget::paintEvent(QPaintEvent *)
         }
         else {
             const ImageSlice &theSlice = *theSliceM;
-            painter.drawImage(theSlice.inSrcImage, *currentFractal.rendering, theSlice.inDrawSurface);
+            painter.drawImage(theSlice.srcSlice, *currentFractal.rendering, theSlice.targetSlice);
         }
 
         selection.paint(painter, this);
