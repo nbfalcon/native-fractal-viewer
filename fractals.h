@@ -34,6 +34,10 @@ struct FractalViewport {
         y1 += dh; y2 -= dh;
     }
 
+    void centerInOnPoint(double x, double y, double panCoeff) {
+        shiftByPercent((x - 0.5) * panCoeff, (y - 0.5) * panCoeff);
+    }
+
     double width() const {
         return x2 - x1;
     }

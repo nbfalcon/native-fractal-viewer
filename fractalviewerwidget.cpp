@@ -149,7 +149,7 @@ void FractalViewerWidget::update2() {
 // Rubber-band
 void FractalViewerWidget::mousePressEvent(QMouseEvent *event) {
     selection.begin(event, this);
-    // FIXME: update real rectangle
+    // FIXME: optimize: update real rectangle
     update();
 }
 
@@ -158,10 +158,21 @@ void FractalViewerWidget::mouseMoveEvent(QMouseEvent *event) {
     update();
 }
 
-void FractalViewerWidget::mouseReleaseEvent(QMouseEvent *) {
+void FractalViewerWidget::mouseReleaseEvent(QMouseEvent *event) {
     selection.finish();
     if (!selection.empty()) {
         viewPort = viewPort.slice(selection.getSelection());
+        update2();
+    }
+    else if ((event->modifiers() & Qt::ControlModifier)
+             && (event->button() == Qt::LeftButton || event->button() == Qt::RightButton)) {
+        // On Click, recenter and zoom in
+        viewPort.centerInOnPoint((double)event->x() / width(), (double)event->y() / height(), 1.0);
+        if (event->button() == Qt::LeftButton) {
+            viewPort.zoomIn(2);
+        } else {
+            viewPort.zoomOut(2);
+        }
         update2();
     }
 }
