@@ -7,6 +7,7 @@
 #include <memory>
 #include <QWidget>
 #include <QRunnable>
+#include <QElapsedTimer>
 #include <QThreadPool>
 
 struct FractalRendering {
@@ -28,10 +29,15 @@ class FractalViewerWidget : public QWidget
     // Bonus widgets
     XQRubberBand selection;
 
+    // Continuous zoom
+    QElapsedTimer lastContinuousZoomTimeStamp;
+    float continuousZoomX, continuousZoomY;
+
     void queueUpdate();
     void shiftBy(double dx, double dy);
     void createActions();
     void update2();
+    void updateForContinuousZoom(float x, float y);
 public:
     FractalViewerWidget();
 
