@@ -32,6 +32,7 @@ class FractalViewerWidget : public QWidget
     // Continuous zoom
     QElapsedTimer lastContinuousZoomTimeStamp;
     float continuousZoomX, continuousZoomY;
+    bool continuousZoomZoomIn = false;
 
     void queueUpdate();
     void shiftBy(double dx, double dy);

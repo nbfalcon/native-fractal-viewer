@@ -134,6 +134,7 @@ void FractalViewerWidget::mousePressEvent(QMouseEvent *event) {
         continuousZoomX = (float)event->x() / width();
         continuousZoomY = (float)event->y() / height();
         lastContinuousZoomTimeStamp.start();
+        continuousZoomZoomIn = event->button() != Qt::RightButton;
         update();
     }
     else if (event->modifiers() & Qt::ShiftModifier) {
@@ -196,6 +197,7 @@ void FractalViewerWidget::updateForContinuousZoom(float x, float y) {
 
     double zoomCoeff = 1.0 + (double)deltaT / 1000 * 0.2;
     // std::cout << "Zoom: " << zoomCoeff << std::endl;
-    viewPort.zoomIn(zoomCoeff);
+    if (continuousZoomZoomIn) viewPort.zoomIn(zoomCoeff);
+    else viewPort.zoomOut(zoomCoeff);
     update2();
 }
