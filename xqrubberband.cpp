@@ -28,7 +28,7 @@ void XQRubberBand::move(QMouseEvent *event, QWidget *parent) {
     float x = (float)event->pos().x() / parent->width(),
             y = (float)event->pos().y() / parent->height();
     // Shift = square selection
-    if ((event->modifiers() & Qt::ShiftModifier) != 0) {
+    if (event->modifiers() & Qt::ControlModifier) {
         float dx = x - startX, dy = y - startY;
         float delta = std::max(std::abs(dx), std::abs(dy));
         float dxM = dx < 0 ? -delta : delta, dyM = dy < 0 ? -delta : delta;
@@ -43,7 +43,7 @@ void XQRubberBand::finish() {
 }
 
 bool XQRubberBand::empty() {
-    return startX == endX || startY == endY;
+    return !haveSelection || startX == endX || startY == endY;
 }
 
 QRectF XQRubberBand::getSelection() {

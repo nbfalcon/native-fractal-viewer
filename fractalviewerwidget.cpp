@@ -23,7 +23,7 @@ static std::optional<ImageSlice> getViewPortSlice(const FractalViewport &drawVie
 
     return ImageSlice{
         .srcSlice = drawInImage.asQRectF(imWidth, imHeight),
-        .targetSlice = imageInDraw.asQRectF(imWidth, imHeight)
+                .targetSlice = imageInDraw.asQRectF(imWidth, imHeight)
     };
 }
 
@@ -134,8 +134,9 @@ void FractalViewerWidget::mousePressEvent(QMouseEvent *event) {
         continuousZoomX = (float)event->x() / width();
         continuousZoomY = (float)event->y() / height();
         lastContinuousZoomTimeStamp.start();
+        update();
     }
-    else {
+    else if (event->modifiers() & Qt::ShiftModifier) {
         selection.begin(event, this);
         // FIXME: optimize: update real rectangle
         update();
@@ -158,14 +159,13 @@ void FractalViewerWidget::mouseReleaseEvent(QMouseEvent *event) {
         lastContinuousZoomTimeStamp.invalidate();
     }
     else {
-        selection.finish();
-
         if (!selection.empty()) {
             viewPort = viewPort.slice(selection.getSelection());
+            selection.finish();
             update2();
         }
-        else if ((event->modifiers() & Qt::ControlModifier)
-                 && (event->button() == Qt::LeftButton || event->button() == Qt::RightButton)) {
+        else if ((event->button() == Qt::LeftButton || event->button() == Qt::RightButton)) {
+            // std::cout << "release" << std::endl;
             // On Click, recenter and zoom in
             viewPort.centerInOnPoint((double)event->x() / width(), (double)event->y() / height(), 1.0);
             if (event->button() == Qt::LeftButton) {
