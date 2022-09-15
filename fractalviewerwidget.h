@@ -33,6 +33,7 @@ class FractalViewerWidget : public QWidget
     QElapsedTimer lastContinuousZoomTimeStamp;
     float continuousZoomX, continuousZoomY;
     bool continuousZoomZoomIn = false;
+    bool cancelNextClick = false;
 
     void queueUpdate();
     void shiftBy(double dx, double dy);
@@ -45,12 +46,16 @@ public:
 protected:
     void paintEvent(QPaintEvent *) override;
     void resizeEvent(QResizeEvent *event) override;
+
+    // Viewport, Scrolling
     void wheelEvent(QWheelEvent *event) override;
 
-    // Rubber-band
+    // Viewport, Rubber-band
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+    // Escape
+    void keyReleaseEvent(QKeyEvent *event) override;
 
 private:
     void zoomIn();

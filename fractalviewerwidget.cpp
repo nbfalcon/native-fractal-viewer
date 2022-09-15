@@ -154,6 +154,7 @@ void FractalViewerWidget::mousePressEvent(QMouseEvent *event) {
         // FIXME: optimize: update real rectangle
         update();
     }
+    cancelNextClick = false;
 }
 
 void FractalViewerWidget::mouseMoveEvent(QMouseEvent *event) {
@@ -177,7 +178,8 @@ void FractalViewerWidget::mouseReleaseEvent(QMouseEvent *event) {
             selection.finish();
             update2();
         }
-        else if ((event->button() == Qt::LeftButton || event->button() == Qt::RightButton)) {
+        else if ((event->button() == Qt::LeftButton || event->button() == Qt::RightButton)
+                 && !cancelNextClick) {
             // std::cout << "release" << std::endl;
             // On Click, recenter and zoom in
             viewPort.centerInOnPoint((double)event->x() / width(), (double)event->y() / height(), 1.0);
@@ -189,6 +191,17 @@ void FractalViewerWidget::mouseReleaseEvent(QMouseEvent *event) {
             update2();
         }
     }
+    cancelNextClick = false;
+}
+
+void FractalViewerWidget::keyReleaseEvent(QKeyEvent *) {
+    selection.finish();
+    if (lastContinuousZoomTimeStamp.isValid()) {
+        updateForContinuousZoom(continuousZoomX, continuousZoomY);
+        lastContinuousZoomTimeStamp.invalidate();
+    }
+    cancelNextClick = true;
+    update();
 }
 
 // "Slots"
