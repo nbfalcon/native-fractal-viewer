@@ -96,7 +96,19 @@ void FractalViewerWidget::resizeEvent(QResizeEvent *) {
 }
 
 void FractalViewerWidget::wheelEvent(QWheelEvent *event) {
-    shiftBy(-(double)event->pixelDelta().x() / 96.0, -(double)event->pixelDelta().y() / 96.0);
+    double x = (double)event->pixelDelta().x() / 96.0,
+            y = (double)event->pixelDelta().y() / 96.0;
+    if (event->modifiers() & Qt::ShiftModifier)
+        std::swap(x, y);
+    if (event->modifiers() & Qt::AltModifier) {
+        y /= 10;
+        viewPort.centerInOnPoint(event->position().x() / width(), event->position().y() / height(), std::abs(y));
+        if (y < 0.0) viewPort.zoomOut(1.0 - y); else viewPort.zoomIn(1.0 + y);
+        update2();
+    }
+    else {
+        shiftBy(-x, -y);
+    }
 }
 
 void FractalViewerWidget::shiftBy(double dx, double dy) {
